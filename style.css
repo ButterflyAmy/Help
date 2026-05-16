@@ -9,6 +9,7 @@ body {
   color: #8fd7ff;
   font-family: "Courier New", monospace;
   overflow-x: hidden;
+  transition: background 1.5s ease;
 }
 
 .noise,
@@ -20,22 +21,35 @@ body {
 }
 
 .noise {
-  opacity: 0.12;
+  opacity: 0.13;
   background-image: url("https://grainy-gradients.vercel.app/noise.svg");
 }
 
 .scanlines {
   background: repeating-linear-gradient(
     to bottom,
-    rgba(255,255,255,0.05),
-    rgba(255,255,255,0.05) 1px,
+    rgba(255,255,255,0.04),
+    rgba(255,255,255,0.04) 1px,
     transparent 1px,
     transparent 4px
   );
   mix-blend-mode: overlay;
 }
 
+#cursorGlow {
+  position: fixed;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(70, 170, 255, 0.13);
+  filter: blur(50px);
+  pointer-events: none;
+  z-index: 1;
+}
+
 #screen {
+  position: relative;
+  z-index: 2;
   min-height: 100vh;
   padding: 40px;
   animation: flicker 4s infinite;
@@ -78,7 +92,7 @@ button {
   border: 1px solid #ff4fd8;
   font-family: inherit;
   cursor: pointer;
-  margin-left: 8px;
+  margin: 6px;
 }
 
 button:hover {
@@ -99,7 +113,7 @@ button:hover {
 
 .window {
   border: 1px solid #58cfff;
-  background: rgba(0, 8, 25, 0.75);
+  background: rgba(0, 8, 25, 0.78);
   box-shadow: 0 0 25px rgba(0, 136, 255, 0.35);
   padding: 24px;
   margin-bottom: 30px;
@@ -124,9 +138,17 @@ button:hover {
   color: #d7f3ff;
 }
 
+.question {
+  text-align: center;
+  font-size: clamp(28px, 5vw, 60px);
+  color: white;
+  text-shadow: 0 0 20px #ff4fd8;
+  margin: 50px 0 30px;
+}
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 18px;
   margin-bottom: 30px;
 }
@@ -135,13 +157,13 @@ button:hover {
   padding: 40px 20px;
   border: 1px solid #253bff;
   color: white;
-  text-decoration: none;
+  text-align: left;
   background: linear-gradient(135deg, rgba(0,0,0,.8), rgba(28,0,60,.7));
-  min-height: 160px;
+  min-height: 170px;
   display: flex;
   align-items: end;
-  font-size: 20px;
-  transition: 0.2s;
+  font-size: 19px;
+  transition: 0.25s;
 }
 
 .card:hover {
@@ -151,13 +173,66 @@ button:hover {
 }
 
 .large {
-  min-height: 260px;
+  min-height: 320px;
   font-size: 20px;
   line-height: 1.7;
 }
 
+.room-title {
+  font-size: 40px;
+  color: white;
+  text-shadow: 0 0 15px #8fd7ff;
+}
+
+.soft {
+  color: #ffffff;
+  font-size: 24px;
+}
+
+.whisper {
+  opacity: 0.75;
+  font-style: italic;
+}
+
+.memory-button {
+  display: block;
+  margin-top: 20px;
+  border-color: #8fd7ff;
+}
+
+.controls {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
 .glitch {
   animation: glitch 0.2s infinite;
+}
+
+/* Room moods */
+
+body.parents-room {
+  background: radial-gradient(circle at center, #13233d, #02030a 75%);
+}
+
+body.study-room {
+  background: radial-gradient(circle at center, #1c1f2c, #060711 75%);
+}
+
+body.worthless-room {
+  background: radial-gradient(circle at center, #061b2d, #01030a 75%);
+}
+
+body.unreal-room {
+  background: radial-gradient(circle at center, #221b45, #02010a 75%);
+}
+
+body.missing-room {
+  background: radial-gradient(circle at center, #3d182b, #050208 75%);
+}
+
+body.tired-room {
+  background: radial-gradient(circle at center, #1b1b1b, #000000 75%);
 }
 
 @keyframes flicker {
@@ -173,4 +248,20 @@ button:hover {
   50% { transform: translate(-2px, 2px); }
   75% { transform: translate(1px, 1px); }
   100% { transform: translate(0); }
+}
+
+@media (max-width: 600px) {
+  #screen {
+    padding: 20px;
+  }
+
+  input {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  button {
+    width: 100%;
+    margin-left: 0;
+  }
 }
