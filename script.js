@@ -8,23 +8,15 @@ const roomPage = document.getElementById("roomPage");
 
 const welcomeText = document.getElementById("welcomeText");
 const message = document.getElementById("message");
-
-const soundBtn = document.getElementById("soundBtn");
-const backBtn = document.getElementById("backBtn");
-const hiddenBtn = document.getElementById("hiddenBtn");
-
-const roomCode = document.getElementById("roomCode");
-const roomTitle = document.getElementById("roomTitle");
-const roomMainText = document.getElementById("roomMainText");
-const hiddenText = document.getElementById("hiddenText");
-
 const cursorGlow = document.getElementById("cursorGlow");
 
+let audioCtx;
+let masterGain;
+let humOsc;
+let rainNoise;
+let roomOsc;
+let audioStarted = false;
 let currentRoom = null;
-let audioCtx = null;
-let oscillator = null;
-let gainNode = null;
-let soundOn = false;
 
 const firstResponses = [
   "you look tired.",
@@ -46,85 +38,42 @@ const softMessages = [
   "you are not too sensitive. the world is too loud."
 ];
 
-const rooms = {
-  parents: {
-    className: "parents-room",
-    freq: 95,
-    code: "room_01 // muffled hallway",
-    title: "the house is loud again",
-    main: "you should not have had to become older just to survive the noise. none of it was your fault. not the yelling. not the silence after. not the way your body still remembers.",
-    hidden: [
-      "you were a child. it was never your job to keep the house from breaking.",
-      "your nervous system remembers. be patient with it.",
-      "one day, peace will not feel suspicious anymore."
-    ]
-  },
+const parentsMessages = {
+  bed: "you learned to stay very quiet. not because you were weak, but because quiet felt safer.",
+  tv: "sometimes noise is used to cover other noise. the screen glowed blue while your stomach stayed tight.",
+  photo: "you kept trying to find the version of them that smiled.",
+  door: "you always listened for the tone. the footsteps. the silence after. your body was trying to protect you.",
+  blanket: "the blanket cannot fix everything, but for a moment, the world becomes smaller. softer. survivable.",
+  lamp: "a little light is still light. you deserved warmth in that room.",
+  window: "outside, the rain keeps falling like it understands without asking questions.",
+  child: "the child version of you did not need to be stronger. they needed to be held."
+};
 
+const otherRooms = {
   study: {
-    className: "study-room",
-    freq: 130,
-    code: "room_02 // abandoned classroom",
     title: "the classroom after midnight",
-    main: "you are not lazy. you are tired from carrying invisible weight. your grades are not your soul. your productivity is not your worth.",
-    hidden: [
-      "start with five minutes. not because five minutes fixes everything, but because it proves you can begin.",
-      "your brain is not a machine. it needs care before output.",
-      "you are allowed to be a person before you are a student."
-    ]
+    text: "this room is still under construction. but even here: you are not lazy. you are tired."
   },
-
   worthless: {
-    className: "worthless-room",
-    freq: 70,
-    code: "room_03 // underwater signal",
     title: "the blue room under the water",
-    main: "you are not difficult to love. you may feel like a burden, but feelings are not always telling the truth. you do not need to earn the right to exist.",
-    hidden: [
-      "you are not a failed version of yourself.",
-      "the fact that you are still here means something inside you kept choosing life.",
-      "someone taught you to question your value. that does not mean they were right."
-    ]
+    text: "this room is still under construction. but even here: you do not need to earn the right to exist."
   },
-
   unreal: {
-    className: "unreal-room",
-    freq: 160,
-    code: "room_04 // reality unstable",
     title: "the mall where nothing feels real",
-    main: "you are still here. when the world feels fake, it can be your mind trying to protect you from too much at once. come back slowly. no rush.",
-    hidden: [
-      "press your feet into the floor. this moment is strange, but it will pass.",
-      "you are not crazy. you are overwhelmed.",
-      "name five things around you. this place will wait."
-    ]
+    text: "this room is still under construction. but even here: you are still real."
   },
-
   missing: {
-    className: "missing-room",
-    freq: 110,
-    code: "room_05 // last train missed",
     title: "the train station of people who left",
-    main: "missing someone means the connection mattered. you are not weak for remembering. some memories hurt because they were beautiful.",
-    hidden: [
-      "not every goodbye means the love was fake.",
-      "you can miss them and still move forward.",
-      "some people leave fingerprints on your soul."
-    ]
+    text: "this room is still under construction. but even here: missing someone means the connection mattered."
   },
-
   tired: {
-    className: "tired-room",
-    freq: 55,
-    code: "room_06 // low battery",
     title: "the room where nothing is expected",
-    main: "you can stop performing here. you do not have to be impressive. you do not have to explain why you are exhausted. some days, surviving is the whole task.",
-    hidden: [
-      "you do not have to solve your whole life tonight.",
-      "drink water. loosen your jaw. unclench your hands.",
-      "you are allowed to exist quietly."
-    ]
+    text: "this room is still under construction. but even here: surviving today is enough."
   }
 };
+
+input.addEventListener("focus", startBaseAudio);
+input.addEventListener("click", startBaseAudio);
 
 button.addEventListener("click", enterSite);
 
@@ -133,6 +82,8 @@ input.addEventListener("keydown", e => {
 });
 
 function enterSite() {
+  startBaseAudio();
+
   const name = input.value.trim() || "unknown";
 
   document.body.classList.add("glitch");
@@ -156,77 +107,226 @@ document.querySelectorAll(".card").forEach(card => {
 
 function openRoom(roomName) {
   currentRoom = roomName;
-  const selected = rooms[roomName];
 
   world.classList.add("hidden");
   roomPage.classList.remove("hidden");
 
   document.body.className = "";
-  document.body.classList.add(selected.className);
 
-  roomCode.textContent = selected.code;
-  roomTitle.textContent = selected.title;
-  roomMainText.textContent = selected.main;
-  hiddenText.textContent = "";
-
-  if (soundOn) {
-    startSound(selected.freq);
+  if (roomName === "parents") {
+    openParentsRoom();
+  } else {
+    openPlaceholderRoom(roomName);
   }
 }
 
-backBtn.addEventListener("click", () => {
+function openParentsRoom() {
+  document.body.classList.add("parents-room");
+  changeRoomSound(92);
+
+  roomPage.innerHTML = `
+    <div class="parents-scene" id="parentsScene">
+      <div class="rain"></div>
+      <div class="window-rain"></div>
+      <div class="tv-glow"></div>
+      <div class="hallway"></div>
+      <div class="door-light"></div>
+      <div class="silhouette"></div>
+      <div class="silhouette two"></div>
+      <div class="child-shape"></div>
+    </div>
+
+    <div class="room-ui">
+      <button class="back" id="backBtn">← return to archive</button>
+
+      <div class="parents-textbox">
+        <p class="tiny">room_01 // muffled hallway</p>
+        <h1>the house is loud again</h1>
+        <p>
+          you should not have had to become older just to survive the noise.
+          none of it was your fault. not the yelling. not the silence after.
+          not the way your body still remembers.
+        </p>
+      </div>
+
+      <div class="objects">
+        <button class="object-btn" data-object="bed">bed</button>
+        <button class="object-btn" data-object="tv">static tv</button>
+        <button class="object-btn" data-object="photo">family photo</button>
+        <button class="object-btn" data-object="door">bedroom door</button>
+        <button class="object-btn" data-object="blanket">hide under blanket</button>
+        <button class="object-btn" data-object="lamp">turn on lamp</button>
+        <button class="object-btn" data-object="window">rain window</button>
+        <button class="object-btn" data-object="child">sit with younger you</button>
+      </div>
+
+      <p id="roomMessage">
+        click something in the room. you are not trapped here.
+      </p>
+
+      <div class="breathe-box">
+        <p>hold this button when it gets too loud.</p>
+        <button id="breatheBtn">hold to breathe</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("backBtn").addEventListener("click", returnToArchive);
+
+  document.querySelectorAll(".object-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      handleParentsObject(btn.dataset.object);
+    });
+  });
+
+  const breatheBtn = document.getElementById("breatheBtn");
+  breatheBtn.addEventListener("mousedown", startBreathing);
+  breatheBtn.addEventListener("mouseup", stopBreathing);
+  breatheBtn.addEventListener("touchstart", startBreathing);
+  breatheBtn.addEventListener("touchend", stopBreathing);
+}
+
+function handleParentsObject(object) {
+  const roomMessage = document.getElementById("roomMessage");
+  const scene = document.getElementById("parentsScene");
+
+  roomMessage.textContent = parentsMessages[object];
+
+  if (object === "blanket") {
+    scene.classList.add("safe-mode");
+    lowerAudio();
+  }
+
+  if (object === "lamp") {
+    scene.classList.add("safe-mode");
+    roomMessage.textContent = parentsMessages.lamp + " the room gets warmer. the yelling feels farther away.";
+    lowerAudio();
+  }
+
+  if (object === "door") {
+    shakeRoom();
+  }
+}
+
+function startBreathing() {
+  const scene = document.getElementById("parentsScene");
+  const roomMessage = document.getElementById("roomMessage");
+
+  scene.classList.add("safe-mode");
+  document.body.classList.add("breathing");
+  roomMessage.textContent = "breathe in. hold. breathe out. the room is not bigger than you.";
+  lowerAudio();
+}
+
+function stopBreathing() {
+  document.body.classList.remove("breathing");
+}
+
+function shakeRoom() {
+  roomPage.classList.add("glitch");
+  setTimeout(() => roomPage.classList.remove("glitch"), 350);
+}
+
+function openPlaceholderRoom(roomName) {
+  const room = otherRooms[roomName];
+
+  roomPage.innerHTML = `
+    <div class="room-placeholder">
+      <button id="backBtn">← return to archive</button>
+      <h1>${room.title}</h1>
+      <p>${room.text}</p>
+    </div>
+  `;
+
+  document.getElementById("backBtn").addEventListener("click", returnToArchive);
+}
+
+function returnToArchive() {
   roomPage.classList.add("hidden");
   world.classList.remove("hidden");
-
+  roomPage.innerHTML = "";
   document.body.className = "";
   currentRoom = null;
-
   message.textContent = "welcome back to the archive.";
-});
-
-hiddenBtn.addEventListener("click", () => {
-  if (!currentRoom) return;
-  hiddenText.textContent = random(rooms[currentRoom].hidden);
-});
-
-soundBtn.addEventListener("click", () => {
-  soundOn = !soundOn;
-
-  if (soundOn) {
-    soundBtn.textContent = "turn sound off";
-    const freq = currentRoom ? rooms[currentRoom].freq : 90;
-    startSound(freq);
-  } else {
-    soundBtn.textContent = "turn sound on";
-    stopSound();
-  }
-});
-
-function startSound(freq) {
-  stopSound();
-
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  oscillator = audioCtx.createOscillator();
-  gainNode = audioCtx.createGain();
-
-  oscillator.type = "sine";
-  oscillator.frequency.value = freq;
-  gainNode.gain.value = 0.035;
-
-  oscillator.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
-
-  oscillator.start();
+  changeRoomSound(70);
 }
 
-function stopSound() {
-  if (oscillator) {
-    oscillator.stop();
-    oscillator.disconnect();
+function startBaseAudio() {
+  if (audioStarted) return;
+
+  audioStarted = true;
+
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.05;
+  masterGain.connect(audioCtx.destination);
+
+  humOsc = audioCtx.createOscillator();
+  humOsc.type = "sine";
+  humOsc.frequency.value = 70;
+
+  const humGain = audioCtx.createGain();
+  humGain.gain.value = 0.45;
+
+  humOsc.connect(humGain);
+  humGain.connect(masterGain);
+  humOsc.start();
+
+  createRainNoise();
+}
+
+function createRainNoise() {
+  const bufferSize = audioCtx.sampleRate * 2;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
   }
 
-  oscillator = null;
-  gainNode = null;
+  rainNoise = audioCtx.createBufferSource();
+  rainNoise.buffer = buffer;
+  rainNoise.loop = true;
+
+  const rainGain = audioCtx.createGain();
+  rainGain.gain.value = 0.018;
+
+  rainNoise.connect(rainGain);
+  rainGain.connect(masterGain);
+  rainNoise.start();
+}
+
+function changeRoomSound(freq) {
+  if (!audioStarted) startBaseAudio();
+
+  if (roomOsc) {
+    roomOsc.stop();
+    roomOsc.disconnect();
+  }
+
+  roomOsc = audioCtx.createOscillator();
+  roomOsc.type = "sine";
+  roomOsc.frequency.value = freq;
+
+  const roomGain = audioCtx.createGain();
+  roomGain.gain.value = 0.025;
+
+  roomOsc.connect(roomGain);
+  roomGain.connect(masterGain);
+  roomOsc.start();
+
+  masterGain.gain.setTargetAtTime(0.065, audioCtx.currentTime, 0.5);
+}
+
+function lowerAudio() {
+  if (!masterGain || !audioCtx) return;
+  masterGain.gain.setTargetAtTime(0.025, audioCtx.currentTime, 0.6);
+
+  setTimeout(() => {
+    if (masterGain && audioCtx) {
+      masterGain.gain.setTargetAtTime(0.055, audioCtx.currentTime, 1);
+    }
+  }, 5000);
 }
 
 setInterval(() => {
@@ -234,6 +334,22 @@ setInterval(() => {
     message.textContent = random(softMessages);
   }
 }, 14000);
+
+setInterval(() => {
+  if (currentRoom === "parents") {
+    const roomMessage = document.getElementById("roomMessage");
+    if (roomMessage && Math.random() > 0.65) {
+      const whispers = [
+        "the rain is still here.",
+        "you can stay in the quiet corner.",
+        "you are not responsible for their anger.",
+        "the door is only a door. it is not your whole life.",
+        "somewhere in the future, it is quiet."
+      ];
+      roomMessage.textContent = random(whispers);
+    }
+  }
+}, 12000);
 
 document.addEventListener("mousemove", e => {
   cursorGlow.style.left = `${e.clientX - 110}px`;
