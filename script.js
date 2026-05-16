@@ -44,9 +44,11 @@ const parentsMessages = {
   photo: "you kept trying to find the version of them that smiled.",
   door: "you always listened for the tone. the footsteps. the silence after. your body was trying to protect you.",
   blanket: "the blanket cannot fix everything, but for a moment, the world becomes smaller. softer. survivable.",
-  lamp: "a little light is still light. you deserved warmth in that room.",
+  lamp: "a little light is still light. you deserved warmth in that room. the yelling feels farther away.",
   window: "outside, the rain keeps falling like it understands without asking questions.",
-  child: "the child version of you did not need to be stronger. they needed to be held."
+  child: "the child version of you did not need to be stronger. they needed to be held.",
+  teddy: "even small things can become witnesses. even a toy can feel like company when the house is too loud.",
+  clock: "time moved differently on nights like this. every minute felt like waiting for the next sound."
 };
 
 const otherRooms = {
@@ -74,7 +76,6 @@ const otherRooms = {
 
 input.addEventListener("focus", startBaseAudio);
 input.addEventListener("click", startBaseAudio);
-
 button.addEventListener("click", enterSite);
 
 input.addEventListener("keydown", e => {
@@ -110,7 +111,6 @@ function openRoom(roomName) {
 
   world.classList.add("hidden");
   roomPage.classList.remove("hidden");
-
   document.body.className = "";
 
   if (roomName === "parents") {
@@ -127,13 +127,26 @@ function openParentsRoom() {
   roomPage.innerHTML = `
     <div class="parents-scene" id="parentsScene">
       <div class="rain"></div>
-      <div class="window-rain"></div>
-      <div class="tv-glow"></div>
-      <div class="hallway"></div>
+      <div class="wall-shadow"></div>
+      <div class="moon"></div>
+      <div class="drawn-window clickable" data-object="window"></div>
+
       <div class="door-light"></div>
-      <div class="silhouette"></div>
-      <div class="silhouette two"></div>
-      <div class="child-shape"></div>
+      <div class="door clickable" data-object="door"></div>
+      <div class="parent-shadow parent-one"></div>
+      <div class="parent-shadow parent-two"></div>
+
+      <div class="photo clickable" data-object="photo"></div>
+      <div class="clock clickable" data-object="clock">2:43</div>
+
+      <div class="bed clickable" data-object="bed"></div>
+      <div class="blanket clickable" data-object="blanket"></div>
+      <div class="teddy clickable" data-object="teddy"></div>
+      <div class="lamp clickable" data-object="lamp"></div>
+      <div class="tv clickable" data-object="tv"></div>
+      <div class="child clickable" data-object="child"></div>
+
+      <div class="room-floor"></div>
     </div>
 
     <div class="room-ui">
@@ -143,25 +156,13 @@ function openParentsRoom() {
         <p class="tiny">room_01 // muffled hallway</p>
         <h1>the house is loud again</h1>
         <p>
-          you should not have had to become older just to survive the noise.
-          none of it was your fault. not the yelling. not the silence after.
-          not the way your body still remembers.
+          click objects in the room. the bed, the tv, the door, the blanket,
+          the lamp, the window, the child, the teddy, the clock.
         </p>
       </div>
 
-      <div class="objects">
-        <button class="object-btn" data-object="bed">bed</button>
-        <button class="object-btn" data-object="tv">static tv</button>
-        <button class="object-btn" data-object="photo">family photo</button>
-        <button class="object-btn" data-object="door">bedroom door</button>
-        <button class="object-btn" data-object="blanket">hide under blanket</button>
-        <button class="object-btn" data-object="lamp">turn on lamp</button>
-        <button class="object-btn" data-object="window">rain window</button>
-        <button class="object-btn" data-object="child">sit with younger you</button>
-      </div>
-
       <p id="roomMessage">
-        click something in the room. you are not trapped here.
+        you are in the room now. nothing here can hurt you.
       </p>
 
       <div class="breathe-box">
@@ -173,15 +174,16 @@ function openParentsRoom() {
 
   document.getElementById("backBtn").addEventListener("click", returnToArchive);
 
-  document.querySelectorAll(".object-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      handleParentsObject(btn.dataset.object);
+  document.querySelectorAll(".clickable").forEach(item => {
+    item.addEventListener("click", () => {
+      handleParentsObject(item.dataset.object);
     });
   });
 
   const breatheBtn = document.getElementById("breatheBtn");
   breatheBtn.addEventListener("mousedown", startBreathing);
   breatheBtn.addEventListener("mouseup", stopBreathing);
+  breatheBtn.addEventListener("mouseleave", stopBreathing);
   breatheBtn.addEventListener("touchstart", startBreathing);
   breatheBtn.addEventListener("touchend", stopBreathing);
 }
@@ -192,14 +194,8 @@ function handleParentsObject(object) {
 
   roomMessage.textContent = parentsMessages[object];
 
-  if (object === "blanket") {
+  if (object === "blanket" || object === "lamp" || object === "child" || object === "teddy") {
     scene.classList.add("safe-mode");
-    lowerAudio();
-  }
-
-  if (object === "lamp") {
-    scene.classList.add("safe-mode");
-    roomMessage.textContent = parentsMessages.lamp + " the room gets warmer. the yelling feels farther away.";
     lowerAudio();
   }
 
@@ -320,6 +316,7 @@ function changeRoomSound(freq) {
 
 function lowerAudio() {
   if (!masterGain || !audioCtx) return;
+
   masterGain.gain.setTargetAtTime(0.025, audioCtx.currentTime, 0.6);
 
   setTimeout(() => {
@@ -338,6 +335,7 @@ setInterval(() => {
 setInterval(() => {
   if (currentRoom === "parents") {
     const roomMessage = document.getElementById("roomMessage");
+
     if (roomMessage && Math.random() > 0.65) {
       const whispers = [
         "the rain is still here.",
@@ -346,6 +344,7 @@ setInterval(() => {
         "the door is only a door. it is not your whole life.",
         "somewhere in the future, it is quiet."
       ];
+
       roomMessage.textContent = random(whispers);
     }
   }
