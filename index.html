@@ -9,6 +9,7 @@
 <body>
   <div class="noise"></div>
   <div class="scanlines"></div>
+  <div id="cursorGlow"></div>
 
   <main id="screen">
     <section id="intro">
@@ -23,28 +24,33 @@
 
     <section id="world" class="hidden">
       <div class="window">
-        <p class="bar">memory_archive.exe</p>
+        <p class="bar">emotional_escape_system.exe</p>
         <h2 id="welcomeText"></h2>
         <p id="message"></p>
       </div>
 
+      <h2 class="question">what hurts today?</h2>
+
       <div class="grid">
-        <a href="#" class="card" data-page="memory">MEMORY</a>
-        <a href="#" class="card" data-page="recovery">RECOVERY PRODUCTS</a>
-        <a href="#" class="card" data-page="pool">POOLROOMS</a>
-        <a href="#" class="card" data-page="observer">OBSERVER</a>
+        <button class="card parents" data-room="parents">Did your parents fight again?</button>
+        <button class="card study" data-room="study">Are you unmotivated to study?</button>
+        <button class="card worthless" data-room="worthless">Do you feel worthless?</button>
+        <button class="card unreal" data-room="unreal">Do you feel unreal?</button>
+        <button class="card missing" data-room="missing">Do you miss someone?</button>
+        <button class="card tired" data-room="tired">Are you just tired of everything?</button>
       </div>
 
-      <div id="content" class="window large">
-        <p class="bar">open something.</p>
-        <p>this place is safe. strange, but safe.</p>
+      <div id="room" class="window large">
+        <p class="bar">no room selected</p>
+        <p>choose the feeling that found you today.</p>
+      </div>
+
+      <div class="controls">
+        <button id="soundBtn">turn sound on</button>
+        <button id="homeBtn">return to archive</button>
       </div>
     </section>
   </main>
-
-  <audio id="hum" loop>
-    <source src="" type="audio/mpeg">
-  </audio>
 
   <script src="script.js"></script>
 </body>
