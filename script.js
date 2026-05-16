@@ -10,18 +10,35 @@ const welcomeText = document.getElementById("welcomeText");
 const message = document.getElementById("message");
 const cursorGlow = document.getElementById("cursorGlow");
 
-let audioCtx;
-let masterGain;
-let humOsc;
-let rainNoise;
-let rainGain;
-let roomOsc;
+let audioCtx, masterGain, humOsc, rainNoise, rainGain, roomOsc;
 let audioStarted = false;
 let currentRoom = null;
 
 let parentsTimer = null;
 let parentsSeconds = 0;
 let safeClicks = 0;
+
+let currentSong = 0;
+let currentPic = 0;
+let musicAudio = null;
+
+const songs = [
+  { title: "song 01", src: "music/song1.mp3" },
+  { title: "song 02", src: "music/song2.mp3" },
+  { title: "song 03", src: "music/song3.mp3" },
+  { title: "song 04", src: "music/song4.mp3" },
+  { title: "song 05", src: "music/song5.mp3" },
+  { title: "song 06", src: "music/song6.mp3" }
+];
+
+const pictures = [
+  "images/pic1.jpg",
+  "images/pic2.jpg",
+  "images/pic3.jpg",
+  "images/pic4.jpg",
+  "images/pic5.jpg",
+  "images/pic6.jpg"
+];
 
 const firstResponses = [
   "you look tired.",
@@ -43,6 +60,16 @@ const softMessages = [
   "you are not too sensitive. the world is too loud."
 ];
 
+const gentleMessages = [
+  "you are not responsible for the weather inside other people.",
+  "you did not cause the storm.",
+  "your body learned fear, but it can also learn safety.",
+  "you deserved a softer childhood.",
+  "you are allowed to protect your peace.",
+  "their anger is not your identity.",
+  "one day, quiet will feel normal."
+];
+
 const parentsMessages = {
   bed: "you learned to stay very quiet. not because you were weak, but because quiet felt safer.",
   tv: "sometimes noise is used to cover other noise. the screen glowed blue while your stomach stayed tight.",
@@ -57,26 +84,11 @@ const parentsMessages = {
 };
 
 const otherRooms = {
-  study: {
-    title: "the classroom after midnight",
-    text: "this room is still under construction. but even here: you are not lazy. you are tired."
-  },
-  worthless: {
-    title: "the blue room under the water",
-    text: "this room is still under construction. but even here: you do not need to earn the right to exist."
-  },
-  unreal: {
-    title: "the mall where nothing feels real",
-    text: "this room is still under construction. but even here: you are still real."
-  },
-  missing: {
-    title: "the train station of people who left",
-    text: "this room is still under construction. but even here: missing someone means the connection mattered."
-  },
-  tired: {
-    title: "the room where nothing is expected",
-    text: "this room is still under construction. but even here: surviving today is enough."
-  }
+  study: { title: "the classroom after midnight", text: "this room is still under construction. but even here: you are not lazy. you are tired." },
+  worthless: { title: "the blue room under the water", text: "this room is still under construction. but even here: you do not need to earn the right to exist." },
+  unreal: { title: "the mall where nothing feels real", text: "this room is still under construction. but even here: you are still real." },
+  missing: { title: "the train station of people who left", text: "this room is still under construction. but even here: missing someone means the connection mattered." },
+  tired: { title: "the room where nothing is expected", text: "this room is still under construction. but even here: surviving today is enough." }
 };
 
 input.addEventListener("focus", startBaseAudio);
@@ -89,7 +101,6 @@ input.addEventListener("keydown", e => {
 
 function enterSite() {
   startBaseAudio();
-
   const name = input.value.trim() || "unknown";
 
   document.body.classList.add("glitch");
@@ -99,38 +110,29 @@ function enterSite() {
     intro.classList.add("hidden");
     world.classList.remove("hidden");
     document.body.classList.remove("glitch");
-
     welcomeText.textContent = `hello, ${name}.`;
     message.textContent = random(softMessages);
   }, 2200);
 }
 
 document.querySelectorAll(".card").forEach(card => {
-  card.addEventListener("click", () => {
-    openRoom(card.dataset.room);
-  });
+  card.addEventListener("click", () => openRoom(card.dataset.room));
 });
 
 function openRoom(roomName) {
   currentRoom = roomName;
-
   world.classList.add("hidden");
   roomPage.classList.remove("hidden");
   document.body.className = "";
-
   stopParentsTimer();
 
-  if (roomName === "parents") {
-    openParentsRoom();
-  } else {
-    openPlaceholderRoom(roomName);
-  }
+  if (roomName === "parents") openParentsRoom();
+  else openPlaceholderRoom(roomName);
 }
 
 function openParentsRoom() {
   document.body.classList.add("parents-room");
   changeRoomSound(92);
-
   parentsSeconds = 0;
   safeClicks = 0;
 
@@ -163,18 +165,27 @@ function openParentsRoom() {
       <button class="back" id="backBtn">← return to archive</button>
       <div id="stayTimer">00:00</div>
 
+      <div class="survival-shelf">
+        <p>things that helped me survive the noise:</p>
+        <button id="musicPanelBtn">music</button>
+        <button id="picturesPanelBtn">pictures</button>
+        <button id="diaryPanelBtn">write</button>
+        <button id="gentleBtn">gentle message</button>
+        <button id="quietBtn">make it quieter</button>
+      </div>
+
+      <div id="toolPanel" class="tool-panel hidden"></div>
+
       <div class="parents-textbox">
         <p class="tiny">room_01 // muffled hallway</p>
         <h1>the house is loud again</h1>
         <p>
-          click objects in the room. some things will make it louder.
-          some things will make it safer. stay as long as you need.
+          click objects in the room. some things make it louder.
+          some things make it safer. use the shelf when you need distraction.
         </p>
       </div>
 
-      <p id="roomMessage">
-        you are in the room now. nothing here can hurt you.
-      </p>
+      <p id="roomMessage">you are in the room now. nothing here can hurt you.</p>
 
       <div class="breathe-box">
         <p>hold this button when it gets too loud.</p>
@@ -184,11 +195,14 @@ function openParentsRoom() {
   `;
 
   document.getElementById("backBtn").addEventListener("click", returnToArchive);
+  document.getElementById("musicPanelBtn").addEventListener("click", openMusicPanel);
+  document.getElementById("picturesPanelBtn").addEventListener("click", openPicturesPanel);
+  document.getElementById("diaryPanelBtn").addEventListener("click", openDiaryPanel);
+  document.getElementById("gentleBtn").addEventListener("click", showGentleMessage);
+  document.getElementById("quietBtn").addEventListener("click", emergencyQuiet);
 
   document.querySelectorAll(".clickable").forEach(item => {
-    item.addEventListener("click", () => {
-      handleParentsObject(item.dataset.object);
-    });
+    item.addEventListener("click", () => handleParentsObject(item.dataset.object));
   });
 
   const breatheBtn = document.getElementById("breatheBtn");
@@ -199,6 +213,135 @@ function openParentsRoom() {
   breatheBtn.addEventListener("touchend", stopBreathing);
 
   startParentsTimer();
+}
+
+function openMusicPanel() {
+  const panel = document.getElementById("toolPanel");
+  panel.classList.remove("hidden");
+  panel.innerHTML = `
+    <p class="tiny">music_player.exe</p>
+    <h2>why not listen to music so the house gets quieter?</h2>
+    <p id="songTitle">${songs[currentSong].title}</p>
+    <div class="tool-buttons">
+      <button id="prevSong">previous</button>
+      <button id="playSong">play / pause</button>
+      <button id="nextSong">next</button>
+      <button id="closePanel">close</button>
+    </div>
+  `;
+
+  document.getElementById("prevSong").addEventListener("click", prevSong);
+  document.getElementById("playSong").addEventListener("click", toggleSong);
+  document.getElementById("nextSong").addEventListener("click", nextSong);
+  document.getElementById("closePanel").addEventListener("click", closePanel);
+}
+
+function toggleSong() {
+  if (!musicAudio) {
+    musicAudio = new Audio(songs[currentSong].src);
+    musicAudio.volume = 0.75;
+  }
+
+  if (musicAudio.paused) {
+    musicAudio.play();
+    lowerAudio();
+  } else {
+    musicAudio.pause();
+  }
+}
+
+function nextSong() {
+  currentSong = (currentSong + 1) % songs.length;
+  loadSong();
+}
+
+function prevSong() {
+  currentSong = (currentSong - 1 + songs.length) % songs.length;
+  loadSong();
+}
+
+function loadSong() {
+  if (musicAudio) {
+    musicAudio.pause();
+  }
+
+  musicAudio = new Audio(songs[currentSong].src);
+  musicAudio.volume = 0.75;
+  musicAudio.play();
+
+  const title = document.getElementById("songTitle");
+  if (title) title.textContent = songs[currentSong].title;
+
+  lowerAudio();
+}
+
+function openPicturesPanel() {
+  const panel = document.getElementById("toolPanel");
+  panel.classList.remove("hidden");
+  panel.innerHTML = `
+    <p class="tiny">escape_gallery.exe</p>
+    <h2>look somewhere else for a while.</h2>
+    <div class="picture-frame">
+      <img id="comfortPic" src="${pictures[currentPic]}" alt="comfort image">
+    </div>
+    <div class="tool-buttons">
+      <button id="prevPic">previous</button>
+      <button id="nextPic">next</button>
+      <button id="closePanel">close</button>
+    </div>
+  `;
+
+  document.getElementById("prevPic").addEventListener("click", prevPic);
+  document.getElementById("nextPic").addEventListener("click", nextPic);
+  document.getElementById("closePanel").addEventListener("click", closePanel);
+}
+
+function nextPic() {
+  currentPic = (currentPic + 1) % pictures.length;
+  document.getElementById("comfortPic").src = pictures[currentPic];
+}
+
+function prevPic() {
+  currentPic = (currentPic - 1 + pictures.length) % pictures.length;
+  document.getElementById("comfortPic").src = pictures[currentPic];
+}
+
+function openDiaryPanel() {
+  const panel = document.getElementById("toolPanel");
+  panel.classList.remove("hidden");
+  panel.innerHTML = `
+    <p class="tiny">unsent_words.txt</p>
+    <h2>write what you cannot say out loud.</h2>
+    <textarea id="diaryBox" placeholder="type here. it will disappear when you close this."></textarea>
+    <div class="tool-buttons">
+      <button id="clearDiary">make it disappear</button>
+      <button id="closePanel">close</button>
+    </div>
+  `;
+
+  document.getElementById("clearDiary").addEventListener("click", () => {
+    document.getElementById("diaryBox").value = "";
+    document.getElementById("roomMessage").textContent = "gone. you do not have to carry every sentence.";
+  });
+
+  document.getElementById("closePanel").addEventListener("click", closePanel);
+}
+
+function closePanel() {
+  document.getElementById("toolPanel").classList.add("hidden");
+  document.getElementById("toolPanel").innerHTML = "";
+}
+
+function showGentleMessage() {
+  document.getElementById("roomMessage").textContent = random(gentleMessages);
+  softBell();
+}
+
+function emergencyQuiet() {
+  const scene = document.getElementById("parentsScene");
+  scene.classList.add("safe-mode", "calm-one");
+  lowerAudio();
+  document.getElementById("roomMessage").textContent = "okay. we are making it quieter. unclench your jaw. breathe slowly. you are here, not there.";
 }
 
 function handleParentsObject(object) {
@@ -225,9 +368,7 @@ function handleParentsObject(object) {
     setTimeout(() => scene.classList.remove("rain-loud"), 4500);
   }
 
-  if (object === "tv") {
-    playStaticSound();
-  }
+  if (object === "tv") playStaticSound();
 
   if (object === "blanket" || object === "lamp" || object === "teddy") {
     safeClicks++;
@@ -237,7 +378,7 @@ function handleParentsObject(object) {
 
   if (safeClicks >= 3) {
     scene.classList.add("calm-one");
-    roomMessage.textContent = "the room notices what you keep choosing. softer things. safer things. it starts becoming quieter for you.";
+    roomMessage.textContent = "the room notices what you keep choosing. softer things. safer things.";
   }
 
   if (safeClicks >= 5) {
@@ -256,7 +397,6 @@ function startParentsTimer() {
 
     const scene = document.getElementById("parentsScene");
     const roomMessage = document.getElementById("roomMessage");
-
     if (!scene || !roomMessage) return;
 
     if (parentsSeconds === 45) {
@@ -289,18 +429,13 @@ function startParentsTimer() {
 function updateStayTimer() {
   const timer = document.getElementById("stayTimer");
   if (!timer) return;
-
   const mins = String(Math.floor(parentsSeconds / 60)).padStart(2, "0");
   const secs = String(parentsSeconds % 60).padStart(2, "0");
-
   timer.textContent = `${mins}:${secs}`;
 }
 
 function stopParentsTimer() {
-  if (parentsTimer) {
-    clearInterval(parentsTimer);
-  }
-
+  if (parentsTimer) clearInterval(parentsTimer);
   parentsTimer = null;
 }
 
@@ -342,6 +477,11 @@ function openPlaceholderRoom(roomName) {
 function returnToArchive() {
   stopParentsTimer();
 
+  if (musicAudio) {
+    musicAudio.pause();
+    musicAudio = null;
+  }
+
   roomPage.classList.add("hidden");
   world.classList.remove("hidden");
   roomPage.innerHTML = "";
@@ -355,7 +495,6 @@ function startBaseAudio() {
   if (audioStarted) return;
 
   audioStarted = true;
-
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
   masterGain = audioCtx.createGain();
@@ -381,9 +520,7 @@ function createRainNoise() {
   const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
   const data = buffer.getChannelData(0);
 
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
-  }
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
 
   rainNoise = audioCtx.createBufferSource();
   rainNoise.buffer = buffer;
@@ -433,12 +570,12 @@ function lowerAudio() {
 
 function playYellingSound() {
   if (!audioStarted) startBaseAudio();
-
   const now = audioCtx.currentTime;
 
   for (let i = 0; i < 3; i++) {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
 
     osc.type = "sawtooth";
     osc.frequency.setValueAtTime(180 + Math.random() * 120, now + i * 0.16);
@@ -448,7 +585,6 @@ function playYellingSound() {
     gain.gain.exponentialRampToValueAtTime(0.09, now + i * 0.16 + 0.04);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.16 + 0.38);
 
-    const filter = audioCtx.createBiquadFilter();
     filter.type = "lowpass";
     filter.frequency.value = 520;
 
@@ -463,7 +599,6 @@ function playYellingSound() {
 
 function playCryingSound() {
   if (!audioStarted) startBaseAudio();
-
   const now = audioCtx.currentTime;
 
   for (let i = 0; i < 4; i++) {
@@ -488,13 +623,10 @@ function playCryingSound() {
 
 function playLoudRain() {
   if (!rainGain || !audioCtx) return;
-
   rainGain.gain.setTargetAtTime(0.085, audioCtx.currentTime, 0.15);
 
   setTimeout(() => {
-    if (rainGain && audioCtx) {
-      rainGain.gain.setTargetAtTime(0.018, audioCtx.currentTime, 1.2);
-    }
+    if (rainGain && audioCtx) rainGain.gain.setTargetAtTime(0.018, audioCtx.currentTime, 1.2);
   }, 4200);
 }
 
@@ -505,24 +637,20 @@ function playStaticSound() {
   const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
   const data = buffer.getChannelData(0);
 
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
-  }
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
 
   const source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-
   const gain = audioCtx.createGain();
-  gain.gain.value = 0.04;
-
   const filter = audioCtx.createBiquadFilter();
+
+  source.buffer = buffer;
+  gain.gain.value = 0.04;
   filter.type = "highpass";
   filter.frequency.value = 600;
 
   source.connect(filter);
   filter.connect(gain);
   gain.connect(masterGain);
-
   source.start();
 }
 
@@ -569,12 +697,8 @@ function softBell() {
 }
 
 function playSoftMelody() {
-  const notes = [392, 440, 523, 440, 392];
-
-  notes.forEach((freq, i) => {
+  [392, 440, 523, 440, 392].forEach((freq, i) => {
     setTimeout(() => {
-      if (!audioStarted) return;
-
       const now = audioCtx.currentTime;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
@@ -596,12 +720,8 @@ function playSoftMelody() {
 }
 
 function playSunriseSound() {
-  const notes = [261, 329, 392, 523, 659];
-
-  notes.forEach((freq, i) => {
+  [261, 329, 392, 523, 659].forEach((freq, i) => {
     setTimeout(() => {
-      if (!audioStarted) return;
-
       const now = audioCtx.currentTime;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
