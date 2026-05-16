@@ -178,7 +178,7 @@ button:hover {
 /* PARENTS ROOM */
 
 body.parents-room {
-  background: #02040a;
+  background: #010205;
 }
 
 .parents-scene {
@@ -186,198 +186,410 @@ body.parents-room {
   inset: 0;
   overflow: hidden;
   background:
-    radial-gradient(circle at 20% 20%, rgba(60,100,170,.28), transparent 30%),
-    radial-gradient(circle at 85% 40%, rgba(255,180,80,.12), transparent 20%),
-    linear-gradient(90deg, #030710, #091426 45%, #020309);
+    radial-gradient(circle at 18% 25%, rgba(70,120,220,.18), transparent 30%),
+    radial-gradient(circle at 74% 38%, rgba(255,150,60,.13), transparent 22%),
+    linear-gradient(#050815, #02030a 55%, #010102);
 }
 
 .parents-scene.safe-mode {
   background:
-    radial-gradient(circle at center, rgba(255,170,90,.18), transparent 35%),
-    linear-gradient(90deg, #020309, #07101d 50%, #020309);
+    radial-gradient(circle at 50% 55%, rgba(255,180,110,.20), transparent 35%),
+    linear-gradient(#050815, #050509 55%, #010102);
 }
 
 .rain {
   position: absolute;
-  inset: -50px;
-  background-image:
-    linear-gradient(120deg, rgba(255,255,255,.22) 1px, transparent 1px);
-  background-size: 18px 70px;
+  inset: -80px;
+  background-image: linear-gradient(120deg, rgba(255,255,255,.22) 1px, transparent 1px);
+  background-size: 18px 75px;
   animation: rain 0.45s linear infinite;
-  opacity: .22;
+  opacity: .24;
 }
 
-.window-rain {
+.room-floor {
   position: absolute;
-  right: 8%;
-  top: 12%;
-  width: 280px;
-  height: 380px;
-  border: 2px solid rgba(130,190,255,.4);
-  background: linear-gradient(#08152c, #020714);
-  box-shadow: 0 0 50px rgba(50,130,255,.3);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32%;
+  background:
+    linear-gradient(160deg, transparent 45%, rgba(255,255,255,.04) 46%, transparent 47%),
+    linear-gradient(#080811, #020203);
+  border-top: 1px solid rgba(110,180,255,.12);
 }
 
-.window-rain::before {
-  content: "";
+.wall-shadow {
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,.18),
-    rgba(255,255,255,.18) 1px,
-    transparent 1px,
-    transparent 25px
-  );
-  opacity: .2;
+  background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,.72) 85%);
 }
 
-.tv-glow {
+.drawn-window {
   position: absolute;
-  left: 7%;
-  bottom: 14%;
-  width: 260px;
-  height: 160px;
-  background: radial-gradient(circle, rgba(120,190,255,.8), rgba(30,70,140,.35), transparent 70%);
-  filter: blur(18px);
-  animation: tvPulse 1.8s infinite;
+  right: 8%;
+  top: 10%;
+  width: 250px;
+  height: 300px;
+  background: linear-gradient(#081a35, #020814);
+  border: 3px solid rgba(120,190,255,.45);
+  box-shadow: 0 0 45px rgba(80,160,255,.25);
 }
 
-.hallway {
+.drawn-window::before {
+  content: "";
   position: absolute;
-  left: 37%;
-  bottom: 0;
-  width: 310px;
-  height: 100vh;
-  background: linear-gradient(#171011, #050507 65%);
-  clip-path: polygon(20% 0, 80% 0, 100% 100%, 0% 100%);
-  opacity: .78;
+  left: 50%;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: rgba(120,190,255,.35);
+}
+
+.drawn-window::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 3px;
+  width: 100%;
+  background: rgba(120,190,255,.35);
+}
+
+.moon {
+  position: absolute;
+  right: 14%;
+  top: 15%;
+  width: 48px;
+  height: 48px;
+  background: rgba(210,230,255,.8);
+  border-radius: 50%;
+  box-shadow: 0 0 35px rgba(180,220,255,.7);
+}
+
+.door {
+  position: absolute;
+  left: 44%;
+  top: 11%;
+  width: 190px;
+  height: 480px;
+  background: linear-gradient(90deg, #130c0d, #211011 45%, #0a0607);
+  border: 2px solid rgba(255,160,80,.2);
+  box-shadow: inset 0 0 40px rgba(255,120,40,.08), 0 0 60px rgba(255,130,40,.08);
+}
+
+.door::after {
+  content: "";
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: rgba(255,190,120,.75);
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(255,170,90,.8);
 }
 
 .door-light {
   position: absolute;
-  left: 46%;
-  top: 17%;
-  width: 120px;
-  height: 68%;
-  background: linear-gradient(rgba(255,170,70,.2), rgba(255,120,30,.03));
-  filter: blur(8px);
+  left: 43%;
+  top: 8%;
+  width: 230px;
+  height: 82%;
+  background: linear-gradient(rgba(255,170,70,.20), rgba(255,120,30,.02));
+  filter: blur(12px);
   animation: doorFlicker 5s infinite;
 }
 
-.silhouette {
+.parent-shadow {
   position: absolute;
-  left: 49%;
-  bottom: 24%;
-  width: 50px;
-  height: 150px;
-  background: rgba(0,0,0,.7);
-  border-radius: 50% 50% 20% 20%;
+  bottom: 31%;
+  width: 58px;
+  height: 190px;
+  background: rgba(0,0,0,.78);
+  border-radius: 50% 50% 22% 22%;
   filter: blur(1px);
 }
 
-.silhouette.two {
-  left: 55%;
-  height: 175px;
+.parent-one {
+  left: 48%;
+  transform: rotate(-3deg);
 }
 
-.child-shape {
+.parent-two {
+  left: 55%;
+  height: 210px;
+  transform: rotate(4deg);
+}
+
+.bed {
   position: absolute;
-  left: 50%;
-  bottom: 8%;
-  width: 70px;
+  left: 7%;
+  bottom: 10%;
+  width: 360px;
+  height: 150px;
+  background: linear-gradient(#16213d, #070b16);
+  border: 3px solid rgba(120,170,255,.2);
+  border-radius: 20px 20px 8px 8px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+}
+
+.bed::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 15px;
+  width: 120px;
+  height: 58px;
+  background: linear-gradient(#31476f, #101c35);
+  border-radius: 14px;
+}
+
+.blanket {
+  position: absolute;
+  left: 13%;
+  bottom: 12%;
+  width: 260px;
+  height: 105px;
+  background: linear-gradient(130deg, #263d75, #0a1125);
+  border-radius: 60px 18px 14px 14px;
+  box-shadow: inset 0 0 25px rgba(255,255,255,.05);
+}
+
+.tv {
+  position: absolute;
+  right: 10%;
+  bottom: 16%;
+  width: 190px;
+  height: 115px;
+  background: #03070e;
+  border: 8px solid #111827;
+  border-radius: 8px;
+  box-shadow: 0 0 45px rgba(90,180,255,.65);
+}
+
+.tv::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  background:
+    repeating-linear-gradient(to bottom, rgba(255,255,255,.18), rgba(255,255,255,.18) 1px, transparent 1px, transparent 7px),
+    radial-gradient(circle, rgba(130,210,255,.85), rgba(40,80,160,.35));
+  animation: tvPulse 1.4s infinite;
+}
+
+.tv::after {
+  content: "";
+  position: absolute;
+  left: 45%;
+  bottom: -34px;
+  width: 30px;
+  height: 34px;
+  background: #090d16;
+}
+
+.lamp {
+  position: absolute;
+  left: 35%;
+  bottom: 14%;
+  width: 80px;
+  height: 210px;
+}
+
+.lamp::before {
+  content: "";
+  position: absolute;
+  left: 26px;
+  bottom: 0;
+  width: 12px;
+  height: 140px;
+  background: #1b1320;
+}
+
+.lamp::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 76px;
+  height: 70px;
+  background: linear-gradient(#3b2230, #120a12);
+  clip-path: polygon(25% 0, 75% 0, 100% 100%, 0 100%);
+  box-shadow: 0 0 40px rgba(255,150,80,.15);
+}
+
+.parents-scene.safe-mode .lamp::after {
+  background: linear-gradient(#ffd59b, #805030);
+  box-shadow: 0 0 90px rgba(255,180,95,.55);
+}
+
+.photo {
+  position: absolute;
+  left: 20%;
+  top: 18%;
+  width: 120px;
   height: 90px;
-  background: rgba(5,10,20,.82);
-  border-radius: 45% 45% 20% 20%;
-  box-shadow: 0 0 30px rgba(120,180,255,.2);
+  background: linear-gradient(#120c13, #050507);
+  border: 8px solid #201821;
+  box-shadow: 0 0 20px rgba(255,255,255,.05);
+  transform: rotate(-3deg);
+}
+
+.photo::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  background:
+    radial-gradient(circle at 35% 40%, rgba(255,220,180,.5) 0 8px, transparent 9px),
+    radial-gradient(circle at 65% 40%, rgba(255,220,180,.5) 0 8px, transparent 9px),
+    linear-gradient(#2b2b42, #11111c);
+  opacity: .55;
+}
+
+.child {
+  position: absolute;
+  left: 43%;
+  bottom: 9%;
+  width: 86px;
+  height: 120px;
+  background: rgba(4,8,18,.9);
+  border-radius: 48% 48% 22% 22%;
+  box-shadow: 0 0 28px rgba(120,180,255,.25);
+}
+
+.child::before {
+  content: "";
+  position: absolute;
+  left: 23px;
+  top: -38px;
+  width: 42px;
+  height: 42px;
+  background: rgba(5,8,16,.95);
+  border-radius: 50%;
+}
+
+.teddy {
+  position: absolute;
+  left: 30%;
+  bottom: 11%;
+  width: 58px;
+  height: 72px;
+  background: #2a1b1a;
+  border-radius: 40%;
+  box-shadow: 0 0 18px rgba(0,0,0,.5);
+}
+
+.teddy::before,
+.teddy::after {
+  content: "";
+  position: absolute;
+  top: -14px;
+  width: 24px;
+  height: 24px;
+  background: #2a1b1a;
+  border-radius: 50%;
+}
+
+.teddy::before { left: -4px; }
+.teddy::after { right: -4px; }
+
+.clock {
+  position: absolute;
+  left: 68%;
+  top: 22%;
+  color: rgba(255,100,180,.9);
+  font-size: 28px;
+  text-shadow: 0 0 18px rgba(255,80,180,.7);
+}
+
+.clickable {
+  cursor: pointer;
+  transition: .2s;
+}
+
+.clickable:hover {
+  filter: brightness(1.35) drop-shadow(0 0 18px rgba(255,128,223,.8));
+  transform: scale(1.02);
 }
 
 .room-ui {
   position: relative;
-  z-index: 3;
+  z-index: 5;
   min-height: 100vh;
-  padding: 28px;
+  padding: 24px;
 }
 
 .back {
   position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 10;
+  top: 18px;
+  left: 18px;
+  z-index: 20;
+  background: rgba(0,0,0,.55);
 }
 
 .parents-textbox {
-  max-width: 660px;
-  margin: 10vh auto 20px;
-  padding: 28px;
-  background: rgba(0,0,0,.55);
-  border: 1px solid rgba(120,200,255,.5);
-  box-shadow: 0 0 35px rgba(40,120,255,.25);
+  position: fixed;
+  left: 28px;
+  top: 86px;
+  max-width: 430px;
+  padding: 22px;
+  background: rgba(0,0,0,.52);
+  border: 1px solid rgba(120,200,255,.45);
+  box-shadow: 0 0 35px rgba(40,120,255,.22);
   backdrop-filter: blur(8px);
 }
 
 .parents-textbox h1 {
-  font-size: clamp(36px, 7vw, 76px);
-  margin: 0 0 20px;
+  font-size: clamp(28px, 5vw, 52px);
+  margin: 0 0 12px;
 }
 
 .parents-textbox p {
-  font-size: 20px;
-  line-height: 1.7;
+  font-size: 17px;
+  line-height: 1.55;
   color: #d9f1ff;
 }
 
-.objects {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 14px;
-  max-width: 760px;
-  margin: 20px auto;
-}
-
-.object-btn {
-  min-height: 82px;
-  background: rgba(0,0,0,.55);
-  border-color: rgba(150,210,255,.7);
-}
-
-.object-btn:hover {
-  background: rgba(110,170,255,.25);
-  color: white;
-}
-
 #roomMessage {
-  max-width: 720px;
-  min-height: 80px;
-  margin: 22px auto;
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  width: min(520px, calc(100vw - 56px));
+  min-height: 100px;
   padding: 22px;
   color: white;
-  font-size: 22px;
-  line-height: 1.6;
-  background: rgba(0,0,0,.5);
+  font-size: 20px;
+  line-height: 1.55;
+  background: rgba(0,0,0,.58);
   border-left: 3px solid #ff80df;
+  box-shadow: 0 0 35px rgba(255,80,200,.15);
+  backdrop-filter: blur(8px);
 }
 
 .breathe-box {
-  max-width: 720px;
-  margin: 20px auto 80px;
-  padding: 20px;
+  position: fixed;
+  left: 28px;
+  bottom: 28px;
+  width: 280px;
+  padding: 16px;
   text-align: center;
-  background: rgba(0,0,0,.42);
+  background: rgba(0,0,0,.45);
   border: 1px solid rgba(255,255,255,.15);
+  backdrop-filter: blur(8px);
+}
+
+.breathe-box p {
+  margin-top: 0;
 }
 
 #breatheBtn {
-  width: min(260px, 90%);
-  height: 80px;
+  width: 100%;
+  height: 70px;
   border-radius: 999px;
 }
 
 .breathing {
   animation: breathe 4s infinite ease-in-out;
 }
-
-/* other rooms placeholder */
 
 .room-placeholder {
   max-width: 720px;
@@ -394,8 +606,8 @@ body.parents-room {
 }
 
 @keyframes tvPulse {
-  0%, 100% { opacity: .45; }
-  50% { opacity: .9; }
+  0%, 100% { opacity: .55; }
+  50% { opacity: .95; }
 }
 
 @keyframes doorFlicker {
@@ -425,9 +637,8 @@ body.parents-room {
   100% { transform: translate(0); }
 }
 
-@media (max-width: 600px) {
-  #screen,
-  .room-ui {
+@media (max-width: 850px) {
+  #screen {
     padding: 20px;
   }
 
@@ -437,13 +648,57 @@ body.parents-room {
     margin-left: 0;
   }
 
-  .window-rain {
-    width: 180px;
-    height: 280px;
-    opacity: .5;
+  .parents-textbox {
+    position: relative;
+    left: auto;
+    top: auto;
+    margin-top: 80px;
+    max-width: 100%;
   }
 
-  .parents-textbox {
-    margin-top: 90px;
+  #roomMessage,
+  .breathe-box {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    margin: 16px 0;
+  }
+
+  .drawn-window {
+    right: 4%;
+    width: 160px;
+    height: 210px;
+    opacity: .75;
+  }
+
+  .door {
+    left: 42%;
+    width: 130px;
+    height: 360px;
+  }
+
+  .bed {
+    width: 240px;
+    height: 110px;
+  }
+
+  .blanket {
+    width: 175px;
+  }
+
+  .tv {
+    width: 135px;
+    height: 90px;
+  }
+
+  .lamp {
+    left: 34%;
+    transform: scale(.75);
+  }
+
+  .photo {
+    transform: scale(.8) rotate(-3deg);
   }
 }
