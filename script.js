@@ -23,7 +23,7 @@ let currentPic = 0;
 let musicAudio = null;
 
 const songs = [
-  { title: "song 01", src: "music/song1.mp3" },
+  { title: "I bet on losing dogs", src: "music/Bildschirmaufnahme 2026-05-16 204911.mp4" },
   { title: "song 02", src: "music/song2.mp3" },
   { title: "song 03", src: "music/song3.mp3" },
   { title: "song 04", src: "music/song4.mp3" },
