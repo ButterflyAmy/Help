@@ -193,12 +193,30 @@ body.parents-room #screen {
     radial-gradient(circle at 18% 25%, rgba(70,120,220,.18), transparent 30%),
     radial-gradient(circle at 74% 38%, rgba(255,150,60,.13), transparent 22%),
     linear-gradient(#050815, #02030a 55%, #010102);
+  transition: 4s ease;
 }
 
 .parents-scene.safe-mode {
   background:
     radial-gradient(circle at 50% 55%, rgba(255,180,110,.20), transparent 35%),
     linear-gradient(#050815, #050509 55%, #010102);
+}
+
+.parents-scene.calm-one {
+  filter: brightness(1.08) saturate(1.1);
+}
+
+.parents-scene.calm-two {
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255,180,110,.18), transparent 35%),
+    linear-gradient(#071024, #050509 55%, #010102);
+}
+
+.parents-scene.sunrise {
+  background:
+    radial-gradient(circle at 70% 20%, rgba(255,190,120,.42), transparent 30%),
+    radial-gradient(circle at 50% 60%, rgba(255,120,200,.12), transparent 40%),
+    linear-gradient(#1a2340, #120914 65%, #030204);
 }
 
 .rain {
@@ -210,6 +228,15 @@ body.parents-room #screen {
   opacity: .24;
   pointer-events: none;
   z-index: 20;
+  transition: opacity 2s ease;
+}
+
+.parents-scene.rain-loud .rain {
+  opacity: .65;
+}
+
+.parents-scene.sunrise .rain {
+  opacity: .06;
 }
 
 .room-floor {
@@ -232,6 +259,11 @@ body.parents-room #screen {
   background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,.72) 85%);
   pointer-events: none;
   z-index: 30;
+  transition: opacity 3s ease;
+}
+
+.parents-scene.sunrise .wall-shadow {
+  opacity: .35;
 }
 
 .drawn-window {
@@ -275,6 +307,11 @@ body.parents-room #screen {
   box-shadow: 0 0 35px rgba(180,220,255,.7);
   pointer-events: none;
   z-index: 2;
+  transition: opacity 4s ease;
+}
+
+.parents-scene.sunrise .moon {
+  opacity: .25;
 }
 
 .door {
@@ -322,6 +359,16 @@ body.parents-room #screen {
   filter: blur(1px);
   pointer-events: none;
   z-index: 3;
+  transition: opacity 5s ease, transform 5s ease;
+}
+
+.parents-scene.calm-two .parent-shadow {
+  opacity: .35;
+}
+
+.parents-scene.sunrise .parent-shadow {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 
 .parent-one {
@@ -425,9 +472,12 @@ body.parents-room #screen {
   background: linear-gradient(#3b2230, #120a12);
   clip-path: polygon(25% 0, 75% 0, 100% 100%, 0 100%);
   box-shadow: 0 0 40px rgba(255,150,80,.15);
+  transition: 2s ease;
 }
 
-.parents-scene.safe-mode .lamp::after {
+.parents-scene.safe-mode .lamp::after,
+.parents-scene.calm-two .lamp::after,
+.parents-scene.sunrise .lamp::after {
   background: linear-gradient(#ffd59b, #805030);
   box-shadow: 0 0 90px rgba(255,180,95,.55);
 }
@@ -530,7 +580,8 @@ body.parents-room #screen {
 .room-ui button,
 .parents-textbox,
 #roomMessage,
-.breathe-box {
+.breathe-box,
+#stayTimer {
   pointer-events: auto;
 }
 
@@ -603,6 +654,15 @@ body.parents-room #screen {
   border-radius: 999px;
 }
 
+#stayTimer {
+  position: fixed;
+  right: 28px;
+  top: 20px;
+  color: rgba(255,255,255,.55);
+  font-size: 13px;
+  z-index: 80;
+}
+
 .breathing {
   animation: breathe 4s infinite ease-in-out;
 }
@@ -615,8 +675,6 @@ body.parents-room #screen {
   background: rgba(0,0,0,.6);
   border: 1px solid #58cfff;
 }
-
-/* PHONE VERSION */
 
 @media (max-width: 850px) {
   body.parents-room {
@@ -661,6 +719,12 @@ body.parents-room #screen {
     width: auto;
     padding: 10px 14px;
     font-size: 12px;
+  }
+
+  #stayTimer {
+    top: 14px;
+    right: 12px;
+    font-size: 11px;
   }
 
   .parents-textbox {
