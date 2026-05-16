@@ -14,9 +14,14 @@ let audioCtx;
 let masterGain;
 let humOsc;
 let rainNoise;
+let rainGain;
 let roomOsc;
 let audioStarted = false;
 let currentRoom = null;
+
+let parentsTimer = null;
+let parentsSeconds = 0;
+let safeClicks = 0;
 
 const firstResponses = [
   "you look tired.",
@@ -113,6 +118,8 @@ function openRoom(roomName) {
   roomPage.classList.remove("hidden");
   document.body.className = "";
 
+  stopParentsTimer();
+
   if (roomName === "parents") {
     openParentsRoom();
   } else {
@@ -123,6 +130,9 @@ function openRoom(roomName) {
 function openParentsRoom() {
   document.body.classList.add("parents-room");
   changeRoomSound(92);
+
+  parentsSeconds = 0;
+  safeClicks = 0;
 
   roomPage.innerHTML = `
     <div class="parents-scene" id="parentsScene">
@@ -151,13 +161,14 @@ function openParentsRoom() {
 
     <div class="room-ui">
       <button class="back" id="backBtn">← return to archive</button>
+      <div id="stayTimer">00:00</div>
 
       <div class="parents-textbox">
         <p class="tiny">room_01 // muffled hallway</p>
         <h1>the house is loud again</h1>
         <p>
-          click objects in the room. the bed, the tv, the door, the blanket,
-          the lamp, the window, the child, the teddy, the clock.
+          click objects in the room. some things will make it louder.
+          some things will make it safer. stay as long as you need.
         </p>
       </div>
 
@@ -186,6 +197,8 @@ function openParentsRoom() {
   breatheBtn.addEventListener("mouseleave", stopBreathing);
   breatheBtn.addEventListener("touchstart", startBreathing);
   breatheBtn.addEventListener("touchend", stopBreathing);
+
+  startParentsTimer();
 }
 
 function handleParentsObject(object) {
@@ -194,14 +207,101 @@ function handleParentsObject(object) {
 
   roomMessage.textContent = parentsMessages[object];
 
-  if (object === "blanket" || object === "lamp" || object === "child" || object === "teddy") {
+  if (object === "door") {
+    playYellingSound();
+    shakeRoom();
+  }
+
+  if (object === "child") {
+    playCryingSound();
+    safeClicks++;
     scene.classList.add("safe-mode");
     lowerAudio();
   }
 
-  if (object === "door") {
-    shakeRoom();
+  if (object === "window") {
+    playLoudRain();
+    scene.classList.add("rain-loud");
+    setTimeout(() => scene.classList.remove("rain-loud"), 4500);
   }
+
+  if (object === "tv") {
+    playStaticSound();
+  }
+
+  if (object === "blanket" || object === "lamp" || object === "teddy") {
+    safeClicks++;
+    scene.classList.add("safe-mode");
+    lowerAudio();
+  }
+
+  if (safeClicks >= 3) {
+    scene.classList.add("calm-one");
+    roomMessage.textContent = "the room notices what you keep choosing. softer things. safer things. it starts becoming quieter for you.";
+  }
+
+  if (safeClicks >= 5) {
+    scene.classList.add("calm-two");
+    roomMessage.textContent = "you are changing the room. the loud parts are still there, but they are not in control anymore.";
+    masterGain.gain.setTargetAtTime(0.035, audioCtx.currentTime, 1);
+  }
+}
+
+function startParentsTimer() {
+  parentsTimer = setInterval(() => {
+    if (currentRoom !== "parents") return;
+
+    parentsSeconds++;
+    updateStayTimer();
+
+    const scene = document.getElementById("parentsScene");
+    const roomMessage = document.getElementById("roomMessage");
+
+    if (!scene || !roomMessage) return;
+
+    if (parentsSeconds === 45) {
+      scene.classList.add("calm-one");
+      roomMessage.textContent = "you stayed. the room expected you to run, but you stayed.";
+      softBell();
+    }
+
+    if (parentsSeconds === 90) {
+      scene.classList.add("calm-two");
+      roomMessage.textContent = "it is getting quieter now. not because it never happened, but because this room belongs to you.";
+      masterGain.gain.setTargetAtTime(0.035, audioCtx.currentTime, 1);
+      softBell();
+    }
+
+    if (parentsSeconds === 150) {
+      roomMessage.textContent = "the child version of you can rest here. you do not have to keep standing at the door.";
+      playSoftMelody();
+    }
+
+    if (parentsSeconds === 240) {
+      scene.classList.add("sunrise");
+      roomMessage.textContent = "you survived the night.";
+      masterGain.gain.setTargetAtTime(0.025, audioCtx.currentTime, 2);
+      playSunriseSound();
+    }
+  }, 1000);
+}
+
+function updateStayTimer() {
+  const timer = document.getElementById("stayTimer");
+  if (!timer) return;
+
+  const mins = String(Math.floor(parentsSeconds / 60)).padStart(2, "0");
+  const secs = String(parentsSeconds % 60).padStart(2, "0");
+
+  timer.textContent = `${mins}:${secs}`;
+}
+
+function stopParentsTimer() {
+  if (parentsTimer) {
+    clearInterval(parentsTimer);
+  }
+
+  parentsTimer = null;
 }
 
 function startBreathing() {
@@ -211,7 +311,9 @@ function startBreathing() {
   scene.classList.add("safe-mode");
   document.body.classList.add("breathing");
   roomMessage.textContent = "breathe in. hold. breathe out. the room is not bigger than you.";
+  safeClicks++;
   lowerAudio();
+  playBreathTone();
 }
 
 function stopBreathing() {
@@ -220,7 +322,7 @@ function stopBreathing() {
 
 function shakeRoom() {
   roomPage.classList.add("glitch");
-  setTimeout(() => roomPage.classList.remove("glitch"), 350);
+  setTimeout(() => roomPage.classList.remove("glitch"), 450);
 }
 
 function openPlaceholderRoom(roomName) {
@@ -238,6 +340,8 @@ function openPlaceholderRoom(roomName) {
 }
 
 function returnToArchive() {
+  stopParentsTimer();
+
   roomPage.classList.add("hidden");
   world.classList.remove("hidden");
   roomPage.innerHTML = "";
@@ -253,6 +357,7 @@ function startBaseAudio() {
   audioStarted = true;
 
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
   masterGain = audioCtx.createGain();
   masterGain.gain.value = 0.05;
   masterGain.connect(audioCtx.destination);
@@ -284,7 +389,7 @@ function createRainNoise() {
   rainNoise.buffer = buffer;
   rainNoise.loop = true;
 
-  const rainGain = audioCtx.createGain();
+  rainGain = audioCtx.createGain();
   rainGain.gain.value = 0.018;
 
   rainNoise.connect(rainGain);
@@ -326,6 +431,197 @@ function lowerAudio() {
   }, 5000);
 }
 
+function playYellingSound() {
+  if (!audioStarted) startBaseAudio();
+
+  const now = audioCtx.currentTime;
+
+  for (let i = 0; i < 3; i++) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(180 + Math.random() * 120, now + i * 0.16);
+    osc.frequency.exponentialRampToValueAtTime(90 + Math.random() * 80, now + i * 0.16 + 0.35);
+
+    gain.gain.setValueAtTime(0.0001, now + i * 0.16);
+    gain.gain.exponentialRampToValueAtTime(0.09, now + i * 0.16 + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.16 + 0.38);
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 520;
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+
+    osc.start(now + i * 0.16);
+    osc.stop(now + i * 0.16 + 0.42);
+  }
+}
+
+function playCryingSound() {
+  if (!audioStarted) startBaseAudio();
+
+  const now = audioCtx.currentTime;
+
+  for (let i = 0; i < 4; i++) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(420 + Math.random() * 80, now + i * 0.28);
+    osc.frequency.exponentialRampToValueAtTime(250 + Math.random() * 40, now + i * 0.28 + 0.22);
+
+    gain.gain.setValueAtTime(0.0001, now + i * 0.28);
+    gain.gain.exponentialRampToValueAtTime(0.045, now + i * 0.28 + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.28 + 0.32);
+
+    osc.connect(gain);
+    gain.connect(masterGain);
+
+    osc.start(now + i * 0.28);
+    osc.stop(now + i * 0.28 + 0.36);
+  }
+}
+
+function playLoudRain() {
+  if (!rainGain || !audioCtx) return;
+
+  rainGain.gain.setTargetAtTime(0.085, audioCtx.currentTime, 0.15);
+
+  setTimeout(() => {
+    if (rainGain && audioCtx) {
+      rainGain.gain.setTargetAtTime(0.018, audioCtx.currentTime, 1.2);
+    }
+  }, 4200);
+}
+
+function playStaticSound() {
+  if (!audioStarted) startBaseAudio();
+
+  const bufferSize = audioCtx.sampleRate * 0.6;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+
+  const gain = audioCtx.createGain();
+  gain.gain.value = 0.04;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = "highpass";
+  filter.frequency.value = 600;
+
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(masterGain);
+
+  source.start();
+}
+
+function playBreathTone() {
+  if (!audioStarted) startBaseAudio();
+
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = "sine";
+  osc.frequency.value = 220;
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.035, now + 0.6);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 3.5);
+
+  osc.connect(gain);
+  gain.connect(masterGain);
+
+  osc.start(now);
+  osc.stop(now + 3.8);
+}
+
+function softBell() {
+  if (!audioStarted) startBaseAudio();
+
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = "sine";
+  osc.frequency.value = 660;
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.04, now + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+
+  osc.connect(gain);
+  gain.connect(masterGain);
+
+  osc.start(now);
+  osc.stop(now + 1.5);
+}
+
+function playSoftMelody() {
+  const notes = [392, 440, 523, 440, 392];
+
+  notes.forEach((freq, i) => {
+    setTimeout(() => {
+      if (!audioStarted) return;
+
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.value = freq;
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.035, now + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+
+      osc.connect(gain);
+      gain.connect(masterGain);
+
+      osc.start(now);
+      osc.stop(now + 0.9);
+    }, i * 550);
+  });
+}
+
+function playSunriseSound() {
+  const notes = [261, 329, 392, 523, 659];
+
+  notes.forEach((freq, i) => {
+    setTimeout(() => {
+      if (!audioStarted) return;
+
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.value = freq;
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.045, now + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+
+      osc.connect(gain);
+      gain.connect(masterGain);
+
+      osc.start(now);
+      osc.stop(now + 1.3);
+    }, i * 420);
+  });
+}
+
 setInterval(() => {
   if (!world.classList.contains("hidden")) {
     message.textContent = random(softMessages);
@@ -336,7 +632,7 @@ setInterval(() => {
   if (currentRoom === "parents") {
     const roomMessage = document.getElementById("roomMessage");
 
-    if (roomMessage && Math.random() > 0.65) {
+    if (roomMessage && Math.random() > 0.65 && parentsSeconds < 230) {
       const whispers = [
         "the rain is still here.",
         "you can stay in the quiet corner.",
