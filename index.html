@@ -40,14 +40,21 @@
         <button class="card tired" data-room="tired">Are you just tired of everything?</button>
       </div>
 
-      <div id="room" class="window large">
-        <p class="bar">no room selected</p>
-        <p>choose the feeling that found you today.</p>
-      </div>
-
       <div class="controls">
         <button id="soundBtn">turn sound on</button>
-        <button id="homeBtn">return to archive</button>
+      </div>
+    </section>
+
+    <section id="roomPage" class="hidden">
+      <button id="backBtn">← return to archive</button>
+
+      <div class="roomCenter">
+        <p id="roomCode"></p>
+        <h1 id="roomTitle"></h1>
+        <p id="roomMainText"></p>
+
+        <button id="hiddenBtn">open hidden message</button>
+        <p id="hiddenText"></p>
       </div>
     </section>
   </main>
